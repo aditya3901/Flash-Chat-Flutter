@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatScreen extends StatefulWidget {
   static const routeName = "/chat-screen";
@@ -8,6 +10,26 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  String? messageText;
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    try {
+      user = await _auth.currentUser;
+      print(user?.email);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,8 +38,9 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: <Widget>[
           IconButton(
               icon: const Icon(Icons.close),
-              onPressed: () {
-                //Implement logout functionality
+              onPressed: () async {
+                await _auth.signOut();
+                Navigator.of(context).pop();
               }),
         ],
         title: const Text('⚡️Chat'),
@@ -37,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        //Do something with the user input.
+                        messageText = value;
                       },
                       decoration: kMessageTextFieldDecoration,
                     ),
@@ -46,7 +69,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     margin: const EdgeInsets.only(right: 10),
                     child: TextButton(
                       onPressed: () {
-                        //Implement send functionality.
+                        _firestore.collection("messages").add(
+                          {"text" : messageText, 
+                          "sender" : user?.email},
+                        );
                       },
                       child: const Text(
                         'Send',
