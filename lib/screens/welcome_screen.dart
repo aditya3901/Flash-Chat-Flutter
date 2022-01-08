@@ -1,10 +1,11 @@
-
 import 'package:animated_text_kit/animated_text_kit.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/login_screen.dart';
 import '../screens/registration_screen.dart';
 import '../widgets/button_layout.dart';
 import 'package:flutter/material.dart';
+
+import 'chat_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   static const routeName = "/welcome-screen";
@@ -20,6 +21,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   void initState() {
     super.initState();
+    checkUser();
 
     controller = AnimationController(
       duration: const Duration(seconds: 1),
@@ -47,6 +49,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     controller?.addListener(() {
       setState(() {});
     });
+  }
+
+  void checkUser() async {
+    User? user = await FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      Navigator.of(context).pushNamed(ChatScreen.routeName);
+    }
   }
 
   @override
